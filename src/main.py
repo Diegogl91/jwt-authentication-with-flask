@@ -72,6 +72,12 @@ def get_users():
 
     return jsonify(users), 200
 
+@app.route('/api/users/<int:id>/favorites', methods=['GET'])
+def get_favorites_by_user(id):
+    favorites = Favorites.query.get(id)
+    
+    return jsonify(favorites.serialize()), 200
+
 # @app.route('/api/users', methods=['POST'])
 # def post_users():
 
