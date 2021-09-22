@@ -36,12 +36,38 @@ def handle_hello():
         "msg": "Hello, this is your GET /user response "
     }
 
-@app.route('/api/people', methods=['GET'])
+@app.route('/api/people', methods=['GET','POST'])
 def get_peoples():
-    peoples = People.query.all()
-    peoples = list(map(lambda peoples: peoples.serialize(), peoples))
 
-    return jsonify(peoples), 200
+    if request.method == 'GET':
+        peoples = People.query.all()
+        peoples = list(map(lambda peoples: peoples.serialize(), peoples))
+
+        return jsonify(peoples), 200
+    
+    if request.method == 'POST':
+        name = request.json.get('name')
+        height = request.json.get('height')
+        mass = request.json.get('mass')
+        hair_color = request.json.get('hair_color')
+        skin_color = request.json.get('skin_color')
+        eye_color = request.json.get('eye_color')
+        birth_year = request.json.get('birth_year')
+        gender = request.json.get('gender')
+
+        people = People()
+        people.name = name
+        people.height = height
+        people.mass = mass
+        people.hair_color = hair_color
+        people.skin_color = skin_color
+        people.eye_color = eye_color
+        people.birth_year = birth_year
+        people.gender = gender
+        people.save()
+
+        return jsonify(people.serialize()),201
+
 
 @app.route("/api/people/<int:id>", methods=['GET'])
 def get_people(id):
@@ -50,12 +76,36 @@ def get_people(id):
     else:
         return jsonify(people.serialize()), 200
 
-@app.route('/api/planet', methods=['GET'])
+@app.route('/api/planet', methods=['GET','POST'])
 def get_planets():
-    planets = Planet.query.all()
-    planets = list(map(lambda planets: planets.serialize(), planets))
+    
+    if request.method == 'GET':
+        planets = Planet.query.all()
+        planets = list(map(lambda planets: planets.serialize(), planets))
 
-    return jsonify(planets), 200
+        return jsonify(planets), 200
+    
+    if request.method == 'POST':
+        name = request.json.get('name')
+        diameter = request.json.get('diameter',"")
+        population = request.json.get('population',"")
+        climate = request.json.get('climate',"")
+        terrain = request.json.get('terrain',"")
+        surface_water = request.json.get('surface_water',"")
+        gravity = request.json.get('gravity',"")
+        rotation_period = request.json.get('rotation_period',"")
+
+        planet = Planet()
+        planet.name = name
+        planet.diameter = diameter
+        planet.population = population
+        planet.climate = climate
+        planet.terrain = terrain
+        planet.surface_water = surface_water
+        planet.gravity = gravity
+        planet.rotation_period = rotation_period
+        planet.save()
+        return jsonify(planet.serialize()),201
 
 @app.route("/api/planet/<int:id>", methods=['GET'])
 def get_planet(id):
@@ -65,18 +115,144 @@ def get_planet(id):
         return jsonify(planet.serialize()), 200
 
 
-@app.route('/api/users', methods=['GET'])
+@app.route('/api/users', methods=['GET','POST'])
 def get_users():
-    users = User.query.all()
-    users = list(map(lambda user: user.serialize(), users))
 
-    return jsonify(users), 200
+    if request.method == 'GET':
+        users = User.query.all()
+        users = list(map(lambda user: user.serialize(), users))
+
+        return jsonify(users), 200
+
+    if request.method == 'POST':
+        name = request.json.get('name')
+        email = request.json.get('email')
+        password = request.json.get('password')
+
+        user = User()
+        user.name = name
+        user.email = email
+        user.password = password
+        user.safe()
+
+        return jsonify(user.serialize())
+
 
 @app.route('/api/users/<int:id>/favorites', methods=['GET'])
 def get_favorites_by_user(id):
-    favorites = Favorites.query.get(id)
+    user = User.query.get(id)
     
-    return jsonify(favorites.serialize()), 200
+    return jsonify(user.serialize_with_favorite()), 200
+ 
+@app.route('/api/favorites/planet/<int:planet_id>', methods=['POST','DELETE'])
+def set_favorite_planet(planet_id):
+    if request.method == 'POST':
+
+        user = User.query.get(1)
+        planet = Planet.query.get(planet_id)
+        if not user: return jsonify({ "message": 'There is no user with this id', "status_code": 400 }),400
+        if not planet: return jsonify({ "message": 'There is no planet with this id', "status_code": 400 }),400
+
+        user.favorites_planet.append(planet)
+        user.save()
+        return jsonify({"message": "Success!", "data": user.serialize_with_favorite()})
+    
+    if request.method == 'DELETE':
+        user = User.query.get(1)
+        planet = Planet.query.get(planet_id)
+        print(planet)
+        if not user: return jsonify({ "message": 'There is no user with this id', "status_code": 400 }),400
+        if not planet: return jsonify({ "message": 'There is no planet with this id', "status_code": 400 }),400
+
+        user.favorites_planet.remove(planet)
+        user.save()
+        return jsonify({"message": "Success!", "data": user.serialize_with_favorite()})
+
+
+@app.route('/api/favorites/people/<int:people_id>', methods=['POST','DELETE'])
+def set_favorite_people(people_id):
+    if request.method == 'POST':
+
+        user = User.query.get(1)
+        people = People.query.get(people_id)
+        if not user: return jsonify({ "message": 'There is no user with this id', "status_code": 400 }),400
+        if not people: return jsonify({ "message": 'There is no people with this id', "status_code": 400 }),400
+
+        user.favorites_people.append(people)
+        user.save()
+        return jsonify({"message": "Success!", "data": user.serialize_with_favorite()})
+    
+    if request.method == 'DELETE':
+        user = User.query.get(1)
+        people = People.query.get(people_id)
+        if not user: return jsonify({ "message": 'There is no user with this id', "status_code": 400 }),400
+        if not people: return jsonify({ "message": 'There is no people with this id', "status_code": 400 }),400
+
+        user.favorites_people.remove(people)
+        user.save()
+        return jsonify({"message": "Success!", "data": user.serialize_with_favorite()})
+
+
+
+
+
+
+
+
+
+
+
+# def post_favoritePlanets_by_user(planet_id):
+
+#     json = request.get_json()
+#     user = str(json['user'])
+
+#     if request.method == 'POST':
+#         favorite = Favorites()
+#         favorite.tipo = "planet"
+#         favorite.favorite_id = planet_id
+#         favorite.user_id = user
+#         favorite.name = str(json['name'])
+#         favorite.save()
+ 
+#         return jsonify("Successfully added"), 201
+        
+
+#     if request.method == 'DELETE':
+#         favorite = Favorites.query.filter_by(favorite_id=planet_id, tipo="planet", user_id = user).first()
+#         favorite.delete()
+
+#         return jsonify({ "success": "Planet deleted from favorites"}), 200
+
+
+@app.route('/api/favorites/people/<int:people_id>', methods=['POST','DELETE'])
+def post_favoritePeople_by_user(people_id):
+
+    json = request.get_json()
+    user = str(json['user'])
+
+    if request.method == 'POST':
+        favorite = Favorites()
+        favorite.tipo = "people"
+        favorite.favorite_id = people_id
+        favorite.user_id = user
+        favorite.name = str(json['name'])
+        favorite.save()
+ 
+        return jsonify("Successfully added"), 201
+        
+
+    if request.method == 'DELETE':
+        favorite = Favorites.query.filter_by(favorite_id=people_id, tipo="people", user_id = user).first()
+        favorite.delete()
+
+        return jsonify({ "success": "Planet deleted from favorites"}), 200
+
+
+    
+
+           
+
 
 # @app.route('/api/users', methods=['POST'])
 # def post_users():
