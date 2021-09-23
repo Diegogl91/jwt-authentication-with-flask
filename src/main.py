@@ -9,7 +9,7 @@ from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Planet, People, Favorites
-#from models import Person
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -192,7 +192,23 @@ def set_favorite_people(people_id):
         user.save()
         return jsonify({"message": "Success!", "data": user.serialize_with_favorite()})
 
+@app.route('/api/signup', methods=['POST'])
+def signup():
 
+    name = request.json.get('name', "")
+    email = request.json.get('email')
+    password = request.json.get('password')
+
+    user = User.query.filter_by(email=email).first()
+    if user: return jsonify({ "msg": "Email ya esta en uso."}), 400
+
+    user = User()
+    user.name = name
+    user.email = email
+    user.password = generate_password_hash(password)
+    user.save()
+
+    return jsonify({ "msg": "Usuario registrado. por favor inicie session"}), 201
 
 
 
