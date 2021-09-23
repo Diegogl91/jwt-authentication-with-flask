@@ -18,6 +18,7 @@ class User(db.Model):
     name = db.Column(db.String(250), default="")
     email = db.Column(db.String(250), nullable=False, unique=True)
     password = db.Column(db.String(50), nullable=False)
+    isActive = db.Column(db.Boolean(), default=True)
     favorites_people = db.relationship('People', secondary=user_favorite_people)
     favorites_planet = db.relationship('Planet', secondary=user_favorite_planet)
 
@@ -26,6 +27,7 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "email": self.email,
+            "isActive": self.isActive,
             "favorites": self.get_favorites()
         }
 
