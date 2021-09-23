@@ -8,6 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
+from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from models import db, User, Planet, People, Favorites
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -15,7 +16,9 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['JWT_SECRET_KEY'] = 'a7656fafe94dae72b1e1487670148412'
 MIGRATE = Migrate(app, db)
+jwt = JWTManager(app)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
@@ -209,6 +212,28 @@ def signup():
     user.save()
 
     return jsonify({ "msg": "Usuario registrado. por favor inicie session"}), 201
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    email = request.json.get('email')
+    password = request.json.get('password')
+
+    user = User.query.filter_by(email=email).first()
+    if not user: 
+        return jsonify({"msg": "Usuario/contraseña no se encuentran"}), 400
+
+    if not check_password_hash(user.password,password): 
+        return jsonify({"msg": "Usuario/contraseña no se encuentran"}), 400
+
+    access_token = create_access_token(identity=user.email)
+
+    data = {
+        "access_token": access_token,
+        "user": user.serialize()
+    }
+
+
+    return jsonify(data),200
 
 
 

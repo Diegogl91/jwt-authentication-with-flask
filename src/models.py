@@ -28,7 +28,7 @@ class User(db.Model):
             "name": self.name,
             "email": self.email,
             "isActive": self.isActive,
-            "favorites": self.get_favorites()
+            #"favorites": self.get_favorites()
         }
 
     def serialize_with_favorite(self):
