@@ -221,7 +221,7 @@ def login():
         return jsonify({"msg": "Usuario/contraseña no se encuentran"}), 400
 
      
-    expire = datetime.timedelta(minutes=60)
+    expire = datetime.timedelta(minutes=1)
 
     access_token = create_access_token(identity=user.email, expires_delta=expire)
 
