@@ -141,11 +141,6 @@ def get_users():
         return jsonify(user.serialize())
 
 
-@app.route('/api/users/<int:id>/favorites', methods=['GET'])
-def get_favorites_by_user(id):
-    user = User.query.get(id)
-    
-    return jsonify(user.serialize_with_favorite()), 200
  
 @app.route('/api/favorites/planet/<int:planet_id>', methods=['POST','DELETE'])
 def set_favorite_planet(planet_id):
@@ -235,10 +230,25 @@ def login():
 
     return jsonify(data),200
 
+@app.route('/api/users', methods=['GET'])
+@jwt_required()
+def users():
+    users = User.query.all()
+    users = list(map(lambda user: user.serialize(), users))
+    return jsonify(users), 200
 
 
+@app.route('/api/users/favorites', methods=['GET'])
+@jwt_required()
+def get_favorites_by_user(): 
+    identity = get_jwt_identity()
+    user = User.query.filter_by(email=identity).first()
+    
+    
+    return jsonify(user.serialize_with_favorite()), 200
 
 
+   
 
 
 
