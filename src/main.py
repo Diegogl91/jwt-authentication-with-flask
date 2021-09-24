@@ -220,7 +220,10 @@ def login():
     if not check_password_hash(user.password,password): 
         return jsonify({"msg": "Usuario/contraseña no se encuentran"}), 400
 
-    access_token = create_access_token(identity=user.email)
+     
+    expire = datetime.timedelta(minutes=60)
+
+    access_token = create_access_token(identity=user.email, expires_delta=expire)
 
     data = {
         "access_token": access_token,
