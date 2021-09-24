@@ -11,6 +11,7 @@ from admin import setup_admin
 from flask_jwt_extended import JWTManager, create_access_token, get_jwt_identity, jwt_required
 from models import db, User, Planet, People, Favorites
 from werkzeug.security import generate_password_hash, check_password_hash
+import datetime
 
 app = Flask(__name__)
 app.url_map.strict_slashes = False
@@ -221,7 +222,7 @@ def login():
         return jsonify({"msg": "Usuario/contraseña no se encuentran"}), 400
 
      
-    expire = datetime.timedelta(minutes=1)
+    expire = datetime.timedelta(minutes=30)
 
     access_token = create_access_token(identity=user.email, expires_delta=expire)
 
@@ -250,31 +251,6 @@ def get_favorites_by_user():
     return jsonify({ "identity": identity, "user":user.serialize_with_favorite()}), 200
 
 
-
-
-# def post_favoritePlanets_by_user(planet_id):
-
-#     json = request.get_json()
-#     user = str(json['user'])
-
-#     if request.method == 'POST':
-#         favorite = Favorites()
-#         favorite.tipo = "planet"
-#         favorite.favorite_id = planet_id
-#         favorite.user_id = user
-#         favorite.name = str(json['name'])
-#         favorite.save()
- 
-#         return jsonify("Successfully added"), 201
-        
-
-#     if request.method == 'DELETE':
-#         favorite = Favorites.query.filter_by(favorite_id=planet_id, tipo="planet", user_id = user).first()
-#         favorite.delete()
-
-#         return jsonify({ "success": "Planet deleted from favorites"}), 200
-
-
 @app.route('/api/favorites/people/<int:people_id>', methods=['POST','DELETE'])
 def post_favoritePeople_by_user(people_id):
 
@@ -297,27 +273,6 @@ def post_favoritePeople_by_user(people_id):
         favorite.delete()
 
         return jsonify({ "success": "Planet deleted from favorites"}), 200
-
-
-    
-
-           
-
-
-# @app.route('/api/users', methods=['POST'])
-# def post_users():
-
-#     name = request.json.get('name')
-#     email = request.json.get('email')
-#     password = request.json.get('password')
-
-#     user = User()
-#     user.name = name
-#     user.email = email
-#     user.password = password
-#     user.save()
-
-#     return jsonify(user.serialize()), 201
 
 
 # this only runs if `$ python src/main.py` is executed
