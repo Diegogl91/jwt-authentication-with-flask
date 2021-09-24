@@ -243,12 +243,8 @@ def users():
 def get_favorites_by_user(): 
     identity = get_jwt_identity()
     user = User.query.filter_by(email=identity).first()
-    
-    
-    return jsonify(user.serialize_with_favorite()), 200
 
-
-   
+    return jsonify({ "identity": identity, "user":user.serialize_with_favorite()}), 200
 
 
 
